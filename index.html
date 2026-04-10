@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JMSS Study Tracker</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f2f1ed;--card:#ffffff;--dark:#1a1a1a;
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#a8a8a0;
+  --border:rgba(0,0,0,0.1);
+  --green:#1D9E75;--greenl:#E1F5EE;--greend:#085041;
+  --amber:#EF9F27;--amberl:#FAEEDA;--amberd:#633806;
+  --red:#E24B4A;--redl:#FCEBEB;--redd:#A32D2D;
+  --blue:#378ADD;--bluel:#E6F1FB;--blued:#0C447C;
+  --purple:#7F77DD;--purpll:#EEEDFE;--purpld:#3C3489;
+  --coral:#D85A30;--corall:#FAECE7;--corald:#712B13;
+  --gray:#888780;--grayl:#F1EFE8;--grayd:#444441;
+  --radius:10px;--radius-lg:14px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem 1rem 4rem;}
+.page{max-width:720px;margin:0 auto;}
+.header{margin-bottom:1.5rem;}
+.header h1{font-size:22px;font-weight:700;letter-spacing:-.3px;}
+.header p{font-size:13px;color:var(--text2);margin-top:3px;}
+.exam-pill{display:inline-block;background:var(--redl);color:var(--redd);font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;margin-top:6px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem;}
+.stat{background:var(--card);border-radius:var(--radius);padding:14px 10px;text-align:center;border:.5px solid var(--border);}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.stat-value{font-size:26px;font-weight:700;line-height:1;}
+.stat-unit{font-size:11px;margin-top:4px;font-style:italic;}
+.stat.blue{background:var(--bluel);}.stat.blue .stat-label{color:var(--blue);}.stat.blue .stat-value{color:var(--blued);}.stat.blue .stat-unit{color:var(--blue);}
+.stat.amber{background:var(--amberl);}.stat.amber .stat-label{color:var(--amber);}.stat.amber .stat-value{color:var(--amberd);}.stat.amber .stat-unit{color:var(--amber);}
+.stat.green{background:var(--greenl);}.stat.green .stat-label{color:var(--green);}.stat.green .stat-value{color:var(--greend);}.stat.green .stat-unit{color:var(--green);}
+.stat.red{background:var(--redl);}.stat.red .stat-label{color:var(--red);}.stat.red .stat-value{color:var(--redd);}.stat.red .stat-unit{color:var(--red);}
+.goal-wrap{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:1.25rem;border:.5px solid var(--border);}
+.goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.goal-label{font-size:12px;font-weight:600;color:var(--text2);}
+.goal-pct{font-size:13px;font-weight:700;}
+.goal-bar-bg{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;}
+.goal-bar-fill{height:100%;border-radius:5px;transition:width .5s ease;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem;}
+.card{background:var(--card);border-radius:var(--radius-lg);border:.5px solid var(--border);padding:1.1rem 1.25rem;margin-bottom:1.25rem;}
+.card-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;}
+.field input[type=number],.field textarea{width:100%;font-size:14px;padding:8px 12px;border:.5px solid rgba(0,0,0,0.18);border-radius:8px;background:#fafaf8;color:var(--text);font-family:inherit;outline:none;}
+.field input:focus,.field textarea:focus{border-color:var(--blue);background:#fff;}
+.field textarea{height:60px;resize:none;}
+.subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.subj-btn{padding:7px 4px;font-size:12px;font-weight:600;border-radius:8px;border:1.5px solid transparent;cursor:pointer;text-align:center;transition:all .15s;}
+.subj-btn.active{border-width:2px;}
+.log-btn{width:100%;padding:11px;font-size:14px;font-weight:700;border:none;border-radius:8px;background:var(--dark);color:#fff;cursor:pointer;margin-top:4px;transition:opacity .15s;}
+.log-btn:hover{opacity:.85;}
+.subj-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.subj-bar-row:last-child{margin-bottom:0;}
+.subj-name{font-size:12px;font-weight:600;width:110px;flex-shrink:0;}
+.subj-bg{flex:1;height:8px;border-radius:4px;background:var(--bg);overflow:hidden;}
+.subj-fill{height:100%;border-radius:4px;transition:width .5s ease;}
+.subj-hrs{font-size:12px;font-weight:600;width:32px;text-align:right;flex-shrink:0;}
+.session-list{display:flex;flex-direction:column;gap:8px;}
+.session-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:13px;}
+.session-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;flex-shrink:0;}
+.session-hrs{font-weight:600;color:var(--text2);flex-shrink:0;min-width:44px;}
+.session-note{color:var(--text3);flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.session-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;padding:0 2px;flex-shrink:0;}
+.session-del:hover{color:var(--red);}
+.empty{color:var(--text3);font-size:13px;text-align:center;padding:1.5rem 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-head{font-size:10px;font-weight:700;color:var(--text3);text-align:center;padding:4px 0;}
+.cal-day{border-radius:8px;padding:5px 2px;text-align:center;}
+.cal-day .dn{font-size:11px;font-weight:700;}
+.cal-day .dh{font-size:10px;margin-top:1px;}
+.cal-day.outside{background:transparent;}
+.cal-day.outside .dn,.cal-day.outside .dh{color:transparent;}
+.cal-day.future{background:#ebebea;}
+.cal-day.future .dn{color:#bbb;}.cal-day.future .dh{color:transparent;}
+.cal-day.zero{background:var(--grayl);}.cal-day.zero .dn,.cal-day.zero .dh{color:var(--grayd);}
+.cal-day.part{background:var(--amberl);}.cal-day.part .dn,.cal-day.part .dh{color:var(--amberd);}
+.cal-day.done{background:var(--greenl);}.cal-day.done .dn,.cal-day.done .dh{color:var(--greend);}
+.cal-day.today-ring{box-shadow:0 0 0 2.5px var(--blue);}
+.cal-legend{display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--text2);flex-wrap:wrap;}
+.cal-legend span{display:flex;align-items:center;gap:5px;}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+@media(max-width:560px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .subject-grid{grid-template-columns:repeat(2,1fr);}
+  .stat-value{font-size:20px;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>JMSS Study Tracker</h1>
+    <p>John Monash Science School</p>
+    <div class="exam-pill" id="examPill"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat blue"><div class="stat-label">Today</div><div class="stat-value" id="statToday">0.0</div><div class="stat-unit">hrs logged</div></div>
+    <div class="stat amber"><div class="stat-label">To Go</div><div class="stat-value" id="statToGo">6.0</div><div class="stat-unit">hrs to goal</div></div>
+    <div class="stat green"><div class="stat-label">Total</div><div class="stat-value" id="statTotal">0.0</div><div class="stat-unit">hrs all time</div></div>
+    <div class="stat red"><div class="stat-label">Days Left</div><div class="stat-value" id="statDays">0</div><div class="stat-unit">until exam</div></div>
+  </div>
+
+  <div class="goal-wrap">
+    <div class="goal-top">
+      <span class="goal-label">Daily goal — 6 hrs</span>
+      <span class="goal-pct" id="goalPct"></span>
+    </div>
+    <div class="goal-bar-bg"><div class="goal-bar-fill" id="goalFill"></div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">Log a session</div>
+      <div class="field">
+        <label>Subject</label>
+        <div class="subject-grid" id="subjGrid"></div>
+      </div>
+      <div class="field">
+        <label>Hours</label>
+        <input type="number" id="hrsInput" min="0.25" max="8" step="0.25" value="1"/>
+      </div>
+      <div class="field">
+        <label>Notes <span style="font-weight:400;color:var(--text3)">(optional)</span></label>
+        <textarea id="noteInput" placeholder="What did you cover?"></textarea>
+      </div>
+      <button class="log-btn" onclick="logSession()">Log session</button>
+    </div>
+
+    <div class="card" style="margin-bottom:0;">
+      <div class="card-title">Subject breakdown</div>
+      <div id="subjBars"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Today's sessions — <span id="todayDate" style="font-weight:400;text-transform:none;font-size:12px;color:var(--text2);letter-spacing:0;"></span></div>
+    <div id="todaySessions"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Streak calendar — Apr 9 to May 29, 2026</div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-legend">
+      <span><div class="cal-legend-dot" style="background:var(--greenl);border:1px solid var(--green);"></div>6+ hrs</span>
+      <span><div class="cal-legend-dot" style="background:var(--amberl);border:1px solid var(--amber);"></div>1–5 hrs</span>
+      <span><div class="cal-legend-dot" style="background:var(--grayl);border:1px solid #ccc;"></div>0 hrs (past)</span>
+      <span><div class="cal-legend-dot" style="background:#ebebea;border:1px solid #ddd;"></div>upcoming</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const GOAL = 6;
+// All dates correctly set to 2026
+const EXAM     = new Date(2026, 4, 29);  // May 29 2026
+const CAL_START = new Date(2026, 3, 9);  // Apr 9 2026
+const KEY = 'jmss_study_v2';
+
+const SUBJS = [
+  {name:'Maths',            bg:'#E6F1FB',fg:'#0C447C',bar:'#378ADD'},
+  {name:'Science',          bg:'#E1F5EE',fg:'#085041',bar:'#1D9E75'},
+  {name:'Verbal Reasoning', bg:'#EEEDFE',fg:'#3C3489',bar:'#7F77DD'},
+  {name:'Writing',          bg:'#FAEEDA',fg:'#633806',bar:'#EF9F27'},
+  {name:'Practice Test',    bg:'#FAECE7',fg:'#712B13',bar:'#D85A30'},
+  {name:'Other',            bg:'#F1EFE8',fg:'#444441',bar:'#888780'},
+];
+
+let sessions = [];
+let activeSubj = 'Maths';
+
+// Always produce YYYY-MM-DD from local date — never use toISOString() which shifts timezone
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
+}
+
+// Same safe formatter for any Date object
+function dateStr(d) {
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
+}
+
+function load() {
+  try { sessions = JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch(e) { sessions = []; }
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(sessions));
+}
+
+function buildSubjGrid() {
+  document.getElementById('subjGrid').innerHTML = SUBJS.map(s => `
+    <button class="subj-btn${s.name===activeSubj?' active':''}"
+      style="background:${s.bg};color:${s.fg};${s.name===activeSubj?'border-color:'+s.fg+';':''}"
+      onclick="selectSubj('${s.name.replace(/'/g,'\\\'')}')">${s.name}</button>
+  `).join('');
+}
+
+function selectSubj(name) {
+  activeSubj = name;
+  buildSubjGrid();
+}
+
+function logSession() {
+  const hrs = parseFloat(document.getElementById('hrsInput').value) || 0;
+  const note = document.getElementById('noteInput').value.trim();
+  if (hrs <= 0) { alert('Enter a valid number of hours.'); return; }
+  sessions.push({ id: Date.now(), date: todayStr(), subject: activeSubj, hours: hrs, note });
+  save();
+  document.getElementById('noteInput').value = '';
+  document.getElementById('hrsInput').value = '1';
+  render();
+}
+
+function deleteSession(id) {
+  sessions = sessions.filter(s => s.id !== id);
+  save();
+  render();
+}
+
+function render() {
+  const today = todayStr();
+  const now = new Date();
+
+  // Strip time from now for day comparisons
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const todaySess = sessions.filter(s => s.date === today);
+  const todayHrs  = todaySess.reduce((a,s) => a+s.hours, 0);
+  const totalHrs  = sessions.reduce((a,s) => a+s.hours, 0);
+  const daysLeft  = Math.max(0, Math.ceil((EXAM - nowDay) / 86400000));
+  const pct       = Math.min(100, Math.round((todayHrs / GOAL) * 100));
+  const rem       = Math.max(0, GOAL - todayHrs);
+
+  // Exam pill
+  document.getElementById('examPill').textContent = daysLeft + ' days until exam — May 29, 2026';
+
+  // Stats
+  document.getElementById('statToday').textContent = todayHrs.toFixed(1);
+  document.getElementById('statToGo').textContent  = rem.toFixed(1);
+  document.getElementById('statTotal').textContent  = totalHrs.toFixed(1);
+  document.getElementById('statDays').textContent   = daysLeft;
+
+  // Goal bar
+  const gc = pct >= 100 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  document.getElementById('goalPct').textContent = pct + '%' + (pct >= 100 ? ' — goal hit!' : ' — ' + rem.toFixed(1) + ' hrs to go');
+  document.getElementById('goalPct').style.color = gc;
+  document.getElementById('goalFill').style.cssText = `width:${pct}%;background:${gc};`;
+
+  // Date label
+  document.getElementById('todayDate').textContent =
+    now.toLocaleDateString('en-AU', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  // Today's sessions list
+  const tsEl = document.getElementById('todaySessions');
+  if (todaySess.length === 0) {
+    tsEl.innerHTML = '<div class="empty">No sessions yet today — log your first one!</div>';
+  } else {
+    const getSubj = name => SUBJS.find(s=>s.name===name) || SUBJS[5];
+    tsEl.innerHTML = '<div class="session-list">' + todaySess.map(s => {
+      const sj = getSubj(s.subject);
+      return `<div class="session-item" style="background:${sj.bg};">
+        <span class="session-chip" style="background:${sj.bg};color:${sj.fg};">${s.subject}</span>
+        <span class="session-hrs">${s.hours.toFixed(1)} hr${s.hours!==1?'s':''}</span>
+        <span class="session-note">${s.note||'—'}</span>
+        <button class="session-del" onclick="deleteSession(${s.id})">×</button>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // Subject bars
+  const totals = {};
+  SUBJS.forEach(s => totals[s.name] = 0);
+  sessions.forEach(s => { if (totals[s.subject] !== undefined) totals[s.subject] += s.hours; });
+  const maxH = Math.max(...Object.values(totals), 1);
+  document.getElementById('subjBars').innerHTML = SUBJS.map(s => `
+    <div class="subj-bar-row">
+      <span class="subj-name" style="color:${s.fg};">${s.name}</span>
+      <div class="subj-bg"><div class="subj-fill" style="width:${Math.round((totals[s.name]/maxH)*100)}%;background:${s.bar};"></div></div>
+      <span class="subj-hrs" style="color:${s.fg};">${totals[s.name].toFixed(1)}</span>
+    </div>`).join('');
+
+  // Build hours-per-day lookup
+  const dateHrs = {};
+  sessions.forEach(s => { dateHrs[s.date] = (dateHrs[s.date]||0) + s.hours; });
+
+  // Calendar — find Monday on or before CAL_START
+  const startMon = new Date(CAL_START);
+  const dow = startMon.getDay(); // 0=Sun
+  const offset = dow === 0 ? -6 : 1 - dow;
+  startMon.setDate(startMon.getDate() + offset);
+
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let cal = days.map(d => `<div class="cal-head">${d}</div>`).join('');
+
+  let cur = new Date(startMon);
+  while (cur <= EXAM) {
+    const ds  = dateStr(cur);
+    const h   = dateHrs[ds] || 0;
+    const curDay = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate());
+    const isToday   = ds === today;
+    const isOutside = curDay < CAL_START;   // before Apr 9
+    const isFuture  = curDay > nowDay;      // strictly after today
+
+    let cls = 'cal-day';
+    if (isOutside) {
+      cls += ' outside';
+    } else if (isFuture) {
+      cls += ' future';
+    } else if (h >= GOAL) {
+      cls += ' done';
+    } else if (h > 0) {
+      cls += ' part';
+    } else {
+      cls += ' zero';
+    }
+    if (isToday) cls += ' today-ring';
+
+    const showHrs = !isOutside && !isFuture && h > 0;
+    cal += `<div class="${cls}" title="${ds}: ${h.toFixed(1)} hrs">
+      <div class="dn">${isOutside ? '' : cur.getDate()}</div>
+      <div class="dh">${showHrs ? h.toFixed(1)+'h' : ''}</div>
+    </div>`;
+
+    cur.setDate(cur.getDate() + 1);
+  }
+  document.getElementById('calGrid').innerHTML = cal;
+}
+
+load();
+buildSubjGrid();
+render();
+</script>
+</body>
+</html>
